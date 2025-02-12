@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: receipt-system
+    runtime: docker
+    repo: https://github.com/GNANESWARIG/Receipt_system  # Update with your repo URL
+    plan: free
+    envVars:
+      - key: PORT
+        value: 80
