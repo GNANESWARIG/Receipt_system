@@ -1,16 +1,16 @@
 <?php
-
-// Load environment variables
-$host = getenv("DB_HOST") ?: "localhost";
-$user = getenv("DB_USER") ?: "root";
-$pass = getenv("DB_PASS") ?: "";
-$dbname = getenv("DB_NAME") ?: "feereceipt";
+$host = getenv("mysql.railway.internal");      
+$dbname = getenv("railway");
+$username = getenv("root");
+$password = getenv("EgGrgtbFgbOiQSRGmgULeiWffbNwQUwj");
+$port = getenv("3306");      
 
 // Connect to MySQL
-$conn = mysqli_connect($host, $user, $pass, $dbname);
+$conn = new mysqli($host, $username, $password, $dbname, $port);
 
-// Check connection
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($conn->connect_error) {
+    die("❌ Connection failed: " . $conn->connect_error);
+} else {
+    echo "✅ Database connected successfully!";
 }
 ?>
