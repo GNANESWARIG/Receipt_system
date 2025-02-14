@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: url("images/background.jpg") no-repeat center center fixed;
+            background: url("/feereceipt/images/background.jpg") no-repeat center center fixed;
             background-size: cover;
             display: flex;
             flex-direction: column;
@@ -80,7 +80,7 @@
 <body>
     <div class="header">
         <h1>Fee Receipt System</h1>
-        <a href="admin/add_excel.php" class="fee-receipt">Add Excel</a>
+        <a href="/feereceipt/admin/add_excel.php" class="fee-receipt">Add Excel</a>
     </div>
     <div class="aform">
         <h2>Search Registration Number</h2>
