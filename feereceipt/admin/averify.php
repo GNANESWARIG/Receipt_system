@@ -1,8 +1,9 @@
-require __DIR__ . '/vendor/autoload.php';
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+<?php
+require __DIR__ . '/vendor/autoload.php'; 
+use PhpOffice\PhpSpreadsheet\IOFactory; 
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate; 
 
-include("db.php");
+include("db.php"); 
 
 if (isset($_POST["uploadfile"])) {
     $fileTmpPath = $_FILES["myfile"]["tmp_name"];
