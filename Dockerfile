@@ -1,10 +1,11 @@
 # Use an official PHP image with Apache
 FROM php:8.1-apache
 
-# Install required PHP extensions, including php-zip
+# Install necessary system dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
-    php-zip \
+    libzip-dev \
+    && docker-php-ext-configure zip \
     && docker-php-ext-install mysqli pdo pdo_mysql zip
 
 # Install Composer
@@ -13,7 +14,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project files (make sure composer.json exists)
+# Copy project files
 COPY . .
 
 # Run Composer install (only if composer.json exists)
