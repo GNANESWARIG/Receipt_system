@@ -55,23 +55,49 @@ if (isset($_POST["uploadfile"])) {
                     continue; // Skip this row
                 }
 
-                // Prepare SQL statement
-                $stmt = $conn->prepare("INSERT INTO student (reg_no, stud_name, sex, father_name, year, degree_branch, rec_no1, quota, mode, tuti, dev, trai_pl, cau_dep, rec_no2, hostel, online, bus, mess) 
-                                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                // Debugging: Print extracted data before inserting
+                echo "<pre>";
+                print_r($data);
+                echo "</pre>";
+
+                // Prepare SQL statement with ON DUPLICATE KEY UPDATE
+                $stmt = $conn->prepare("
+                    INSERT INTO student 
+                    (reg_no, stud_name, sex, father_name, year, degree_branch, rec_no1, quota, mode, tuti, dev, trai_pl, cau_dep, rec_no2, hostel, online, bus, mess) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+                    ON DUPLICATE KEY UPDATE 
+                    stud_name = VALUES(stud_name), 
+                    sex = VALUES(sex), 
+                    father_name = VALUES(father_name), 
+                    year = VALUES(year), 
+                    degree_branch = VALUES(degree_branch),
+                    rec_no1 = VALUES(rec_no1), 
+                    quota = VALUES(quota), 
+                    mode = VALUES(mode), 
+                    tuti = VALUES(tuti), 
+                    dev = VALUES(dev), 
+                    trai_pl = VALUES(trai_pl), 
+                    cau_dep = VALUES(cau_dep), 
+                    rec_no2 = VALUES(rec_no2), 
+                    hostel = VALUES(hostel), 
+                    online = VALUES(online), 
+                    bus = VALUES(bus), 
+                    mess = VALUES(mess)
+                ");
 
                 // Bind parameters
                 $stmt->bind_param("ssssssssssssssssss", $reg_no, $stud_name, $sex, $father_name, $year, $degree_branch, $rec_no1, $quota, $mode, $tuti, $dev, $trai_pl, $cau_dep, $rec_no2, $hostel, $online, $bus, $mess);
 
                 // Execute the statement
                 if (!$stmt->execute()) {
-                    echo "Error inserting row $row: " . $stmt->error;
+                    die("Error inserting/updating row $row: " . $stmt->error);
                 }
 
                 // Close the statement
                 $stmt->close();
             }
 
-            echo "<script>alert('Student details added successfully');window.location.replace('add_excel.php');</script>";
+            echo "<script>alert('Student details added/updated successfully');window.location.replace('add_excel.php');</script>";
         } catch (Exception $e) {
             echo "<script>alert('Error processing file: " . $e->getMessage() . "');window.location.replace('add_excel.php');</script>";
         }
