@@ -20,14 +20,15 @@ if (isset($_POST["uploadfile"])) {
 
             for ($row = 2; $row <= $highestRow; ++$row) {
                 $data = [];
-                $isEmptyRow = true;
+                $isEmptyRow = true; // Flag to check if the row is empty
 
                 for ($col = 1; $col <= $highestColumnIndex; ++$col) {
                     $columnLetter = Coordinate::stringFromColumnIndex($col);
-                    $cellValue = trim($worksheet->getCell($columnLetter . $row)->getValue());
+                    $cellValue = $worksheet->getCell($columnLetter . $row)->getValue();
+                    $cellValue = $cellValue !== null ? trim($cellValue) : ''; // Prevent null trim() error
 
-                    if (!empty($cellValue)) {
-                        $isEmptyRow = false; // Row has data, so it's not empty
+                    if ($cellValue !== '') {
+                        $isEmptyRow = false; // Mark as non-empty if any cell has data
                     }
 
                     $data[] = mysqli_real_escape_string($conn, $cellValue);
@@ -57,7 +58,7 @@ if (isset($_POST["uploadfile"])) {
                 $bus = $data[16] ?? null;
                 $mess = $data[17] ?? null;
 
-                // Skip invalid gender values
+                // Skip invalid rows
                 if (!in_array($sex, ['M', 'F'])) {
                     continue;
                 }
@@ -104,4 +105,3 @@ if (isset($_POST["uploadfile"])) {
         echo "<script>alert('Please choose an Excel file (.xls or .xlsx) only');window.location.replace('add_excel.php');</script>";
     }
 }
-?>
