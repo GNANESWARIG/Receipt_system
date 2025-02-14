@@ -23,31 +23,31 @@ if (isset($_POST["uploadfile"])) {
                 for ($col = 1; $col <= $highestColumnIndex; ++$col) {
                     $columnLetter = Coordinate::stringFromColumnIndex($col);
                     $cellValue = $worksheet->getCell($columnLetter . $row)->getValue();
-                    $data[] = mysqli_real_escape_string($conn, trim($cellValue));
+                    $data[] = mysqli_real_escape_string($conn, trim($cellValue ?? '')); // Avoid null issues
                 }
 
-                // Assign variables
-                $reg_no = $data[0] ?? null;
-                $stud_name = $data[1] ?? null;
-                $sex = strtoupper($data[2] ?? null);
-                $father_name = $data[3] ?? null;
-                $year = $data[4] ?? null;
-                $degree_branch = $data[5] ?? null;
-                $rec_no1 = $data[6] ?? null;
-                $quota = $data[7] ?? null;
-                $mode = $data[8] ?? null;
-                $tuti = $data[9] ?? null;
-                $dev = $data[10] ?? null;
-                $trai_pl = $data[11] ?? null;
-                $cau_dep = $data[12] ?? null;
-                $rec_no2 = $data[13] ?? null;
-                $hostel = $data[14] ?? null;
-                $online = $data[15] ?? null;
-                $bus = $data[16] ?? null;
-                $mess = $data[17] ?? null;
+                // Assign variables (handling NULL values properly)
+                $reg_no = $data[0] ?? '';
+                $stud_name = $data[1] ?? '';
+                $sex = strtoupper($data[2] ?? '');
+                $father_name = $data[3] ?? '';
+                $year = $data[4] ?? '';
+                $degree_branch = $data[5] ?? '';
+                $rec_no1 = $data[6] ?? '';
+                $quota = $data[7] ?? '';
+                $mode = $data[8] ?? '';
+                $tuti = $data[9] ?? '';
+                $dev = $data[10] ?? '';
+                $trai_pl = $data[11] ?? '';
+                $cau_dep = $data[12] ?? '';
+                $rec_no2 = $data[13] ?? '';
+                $hostel = $data[14] ?? '';
+                $online = $data[15] ?? '';
+                $bus = $data[16] ?? '';
+                $mess = $data[17] ?? '';
 
                 // Skip invalid rows
-                if (!in_array($sex, ['M', 'F'])) {
+                if (!in_array($sex, ['M', 'F'], true)) {
                     continue;
                 }
 
@@ -76,6 +76,10 @@ if (isset($_POST["uploadfile"])) {
                     mess = VALUES(mess)
                 ");
 
+                if (!$stmt) {
+                    die("Error preparing statement: " . $conn->error);
+                }
+
                 $stmt->bind_param("ssssssssssssssssss", $reg_no, $stud_name, $sex, $father_name, $year, $degree_branch, $rec_no1, $quota, $mode, $tuti, $dev, $trai_pl, $cau_dep, $rec_no2, $hostel, $online, $bus, $mess);
 
                 if (!$stmt->execute()) {
@@ -87,9 +91,10 @@ if (isset($_POST["uploadfile"])) {
 
             echo "<script>alert('Student details added/updated successfully');window.location.replace('add_excel.php');</script>";
         } catch (Exception $e) {
-            echo "<script>alert('Error processing file: " . $e->getMessage() . "');window.location.replace('add_excel.php');</script>";
+            echo "<script>alert('Error processing file: " . addslashes($e->getMessage()) . "');window.location.replace('add_excel.php');</script>";
         }
     } else {
         echo "<script>alert('Please choose an Excel file (.xls or .xlsx) only');window.location.replace('add_excel.php');</script>";
     }
 }
+?>
