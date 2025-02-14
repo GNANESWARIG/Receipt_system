@@ -10,11 +10,11 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project files to Apache root directory
+# Copy project files (make sure composer.json exists)
 COPY . .
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Run Composer install (only if composer.json exists)
+RUN if [ -f "composer.json" ]; then composer install --no-dev --optimize-autoloader; fi
 
 # Set correct permissions
 RUN chown -R www-data:www-data /var/www/html
