@@ -1,9 +1,14 @@
 <?php
-$host = getenv("mysql.railway.internal");      
-$dbname = getenv("railway");
-$username = getenv("root");
-$password = getenv("EgGrgtbFgbOiQSRGmgULeiWffbNwQUwj");
-$port = getenv("3306");      
+$host = "mysql.railway.internal";  // Replace with actual host
+$dbname = "railway";               // Replace with actual database name
+$username = "root";                // Replace with actual username
+$password = "EgGrgtbFgbOiQSRGmgULeiWffbNwQUwj"; // Replace with actual password
+$port = 3306;                      // Ensure port is correct
+
+// Check if MySQLi extension is enabled
+if (!extension_loaded('mysqli')) {
+    die("❌ MySQLi extension is not enabled!");
+}
 
 // Connect to MySQL
 $conn = new mysqli($host, $username, $password, $dbname, $port);
