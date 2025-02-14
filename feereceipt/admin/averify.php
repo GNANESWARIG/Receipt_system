@@ -1,4 +1,4 @@
-require 'vendor/autoload.php'; // Ensure PHPSpreadsheet is autoloaded
+require __DIR__ . '/vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
