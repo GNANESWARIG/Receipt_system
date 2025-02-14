@@ -98,7 +98,7 @@ include("db.php");
     <body>
     <div class="header">
         <h1>Add Excel</h1>
-        <a href=".../index.php" class="back-link">Back to Home</a>
+        <a href="/../../index.php" class="back-link">Back to Home</a>
     </div>
     <div class="form-container">
         <h2>Upload Student Data</h2>
