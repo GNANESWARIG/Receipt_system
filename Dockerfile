@@ -1,8 +1,11 @@
 # Use an official PHP image with Apache
 FROM php:8.1-apache
 
-# Enable required PHP extensions
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install required PHP extensions, including php-zip
+RUN apt-get update && apt-get install -y \
+    unzip \
+    php-zip \
+    && docker-php-ext-install mysqli pdo pdo_mysql zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
