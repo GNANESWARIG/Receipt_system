@@ -94,22 +94,42 @@ include("db.php");
             font-weight: bold;
         }
     </style>
-    </head>
-    <body>
+</head>
+<body>
     <div class="header">
         <h1>Add Excel</h1>
         <a href="/../../index.php" class="back-link">Back to Home</a>
     </div>
+
     <div class="form-container">
         <h2>Upload Student Data</h2>
+
+        <!-- Display success or error messages -->
+        <?php
+        if (!empty($_SESSION['upload_errors'])) {
+            echo "<div class='error'><strong>Errors:</strong><br>";
+            foreach ($_SESSION['upload_errors'] as $error) {
+                echo "- $error <br>";
+            }
+            echo "</div>";
+            unset($_SESSION['upload_errors']); // Clear errors after displaying
+        }
+
+        if (!empty($_SESSION['upload_success'])) {
+            echo "<div class='success'>{$_SESSION['upload_success']}</div>";
+            unset($_SESSION['upload_success']); // Clear success message
+        }
+        ?>
+
         <form action="averify.php" method="POST" enctype="multipart/form-data">
             <label for="file">Choose Excel File:</label>
             <input type="file" name="myfile" id="file" accept=".xlsx" required>
             <button type="submit" name="uploadfile" value="upload" class="mt-3 btn btn-primary mx-auto px-4 d-block">Upload</button>
         </form>
+
         <a href="https://docs.google.com/spreadsheets/d/1yJIdTPLxkyj_HPya6DbiVMd8h5ePmGkk/export?format=xlsx" target="_blank">
             <button class="download-template">Download Template</button>
         </a>
     </div>
-    </body>
+</body>
 </html>
