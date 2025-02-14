@@ -48,13 +48,13 @@ if (isset($_GET['reg_no'])) {
 
         function generateReceipt($student, $title, $details, $total) {
             echo '<div class="header">';
-            echo '<img src="images/1.png" alt="Left Logo">';
+            echo '<img src="/images/1.png" alt="Left Logo">';
             echo '<div>';
             echo '<h1 class="college-name">R. M. K. COLLEGE OF ENGINEERING AND TECHNOLOGY</h1>';
             echo '<p class="institution-details">(An Autonomous Institution and ISO 9001:2015 Certified Institution,</br> All UG Programmes Accredited by NBA & NAAC with "A")</p>';
             echo '<p class="address">R.S.M. Nagar, Puduvoyal - 601 206.</p>';
             echo '</div>';
-            echo '<img src="images/2.jpg" alt="Right Logo">';
+            echo '<img src="/images/2.jpg" alt="Right Logo">';
             echo '</div>';
             echo '<h2>' . htmlspecialchars($title) . '</h2>';
         
