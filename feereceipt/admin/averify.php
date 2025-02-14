@@ -1,9 +1,13 @@
 <?php
+session_start();  // Start session to store errors
+
 require __DIR__ . '/vendor/autoload.php'; 
 use PhpOffice\PhpSpreadsheet\IOFactory; 
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate; 
 
 include("db.php"); 
+
+$_SESSION['upload_errors'] = []; // Reset errors
 
 if (isset($_POST["uploadfile"])) {
     $fileTmpPath = $_FILES["myfile"]["tmp_name"];
@@ -23,10 +27,10 @@ if (isset($_POST["uploadfile"])) {
                 for ($col = 1; $col <= $highestColumnIndex; ++$col) {
                     $columnLetter = Coordinate::stringFromColumnIndex($col);
                     $cellValue = $worksheet->getCell($columnLetter . $row)->getValue();
-                    $data[] = mysqli_real_escape_string($conn, trim($cellValue ?? '')); // Avoid null issues
+                    $data[] = mysqli_real_escape_string($conn, trim($cellValue ?? '')); // Prevent null errors
                 }
 
-                // Assign variables (handling NULL values properly)
+                // Assign variables
                 $reg_no = $data[0] ?? '';
                 $stud_name = $data[1] ?? '';
                 $sex = strtoupper($data[2] ?? '');
@@ -48,6 +52,7 @@ if (isset($_POST["uploadfile"])) {
 
                 // Skip invalid rows
                 if (!in_array($sex, ['M', 'F'], true)) {
+                    $_SESSION['upload_errors'][] = "Row $row: Invalid gender value '$sex'. Skipped.";
                     continue;
                 }
 
@@ -77,24 +82,29 @@ if (isset($_POST["uploadfile"])) {
                 ");
 
                 if (!$stmt) {
-                    die("Error preparing statement: " . $conn->error);
+                    $_SESSION['upload_errors'][] = "Row $row: Database error: " . $conn->error;
+                    continue;
                 }
 
                 $stmt->bind_param("ssssssssssssssssss", $reg_no, $stud_name, $sex, $father_name, $year, $degree_branch, $rec_no1, $quota, $mode, $tuti, $dev, $trai_pl, $cau_dep, $rec_no2, $hostel, $online, $bus, $mess);
 
                 if (!$stmt->execute()) {
-                    die("Error inserting/updating row $row: " . $stmt->error);
+                    $_SESSION['upload_errors'][] = "Row $row: Insert/update failed: " . $stmt->error;
                 }
 
                 $stmt->close();
             }
 
-            echo "<script>alert('Student details added/updated successfully');window.location.replace('add_excel.php');</script>";
+            $_SESSION['upload_success'] = "Student details added/updated successfully.";
         } catch (Exception $e) {
-            echo "<script>alert('Error processing file: " . addslashes($e->getMessage()) . "');window.location.replace('add_excel.php');</script>";
+            $_SESSION['upload_errors'][] = "File processing error: " . $e->getMessage();
         }
     } else {
-        echo "<script>alert('Please choose an Excel file (.xls or .xlsx) only');window.location.replace('add_excel.php');</script>";
+        $_SESSION['upload_errors'][] = "Invalid file type. Please upload an Excel file (.xls or .xlsx).";
     }
+
+    // Redirect to display results
+    header("Location: add_excel.php");
+    exit;
 }
 ?>
