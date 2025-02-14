@@ -6,8 +6,9 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 include("db.php");
 
 if (isset($_POST["uploadfile"])) {
-    $target_dir = "uploads/";
-    $target_file = $target_dir . basename($_FILES["myfile"]["name"]);
+  $target_dir = __DIR__ . "/uploads/"; // Correct path
+$target_file = $target_dir . basename($_FILES["myfile"]["name"]);
+
 
     // Check if the uploaded file is an Excel file
     $fileType = pathinfo($target_file, PATHINFO_EXTENSION);
