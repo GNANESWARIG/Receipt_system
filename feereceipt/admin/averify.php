@@ -71,7 +71,7 @@ if (isset($_POST["uploadfile"])) {
                 $stmt->close();
             }
 
-            echo "<script>alert('Student details added successfully');window.location.replace('averify.php');</script>";
+            echo "<script>alert('Student details added successfully');window.location.replace('add_excel.php');</script>";
         } catch (Exception $e) {
             echo "<script>alert('Error processing file: " . $e->getMessage() . "');window.location.replace('add_excel.php');</script>";
         }
