@@ -1,3 +1,4 @@
+<?php
 require __DIR__ . '/vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
@@ -9,27 +10,21 @@ if (isset($_POST["uploadfile"])) {
     $fileType = pathinfo($_FILES["myfile"]["name"], PATHINFO_EXTENSION);
     $allowedTypes = ['xls', 'xlsx'];
 
-    // Validate the file type
     if (in_array($fileType, $allowedTypes)) {
         try {
-            // Load the Excel file directly from the temp path
             $spreadsheet = IOFactory::load($fileTmpPath);
             $worksheet = $spreadsheet->getActiveSheet();
             $highestRow = $worksheet->getHighestRow();
-            $highestColumn = $worksheet->getHighestColumn();
-            $highestColumnIndex = Coordinate::columnIndexFromString($highestColumn);
+            $highestColumnIndex = Coordinate::columnIndexFromString($worksheet->getHighestColumn());
 
-            // Loop through each row of the worksheet
             for ($row = 2; $row <= $highestRow; ++$row) {
                 $data = [];
                 for ($col = 1; $col <= $highestColumnIndex; ++$col) {
-                    $columnLetter = Coordinate::stringFromColumnIndex($col);
-                    $cellAddress = $columnLetter . $row;
-                    $cellValue = $worksheet->getCell($cellAddress)->getValue();
+                    $cellValue = $worksheet->getCellByColumnAndRow($col, $row)->getValue();
                     $data[] = mysqli_real_escape_string($conn, trim($cellValue));
                 }
 
-                // Assign variables
+                // Assign variables from the Excel data
                 $reg_no = $data[0] ?? null;
                 $stud_name = $data[1] ?? null;
                 $sex = strtoupper($data[2] ?? null);
@@ -49,59 +44,64 @@ if (isset($_POST["uploadfile"])) {
                 $bus = $data[16] ?? null;
                 $mess = $data[17] ?? null;
 
-                // Validate sex field
-                if (!in_array($sex, ['M', 'F'])) {
-                    error_log("Invalid sex value on row $row: $sex");
-                    continue; // Skip this row
+                // Skip row if reg_no is empty
+                if (empty($reg_no)) {
+                    echo "Skipping row $row: Missing reg_no!<br>";
+                    continue;
                 }
 
-                // Debugging: Print extracted data before inserting
-                echo "<pre>";
-                print_r($data);
-                echo "</pre>";
+                // Check if student already exists
+                $checkStmt = $conn->prepare("SELECT COUNT(*) FROM student WHERE reg_no = ?");
+                $checkStmt->bind_param("s", $reg_no);
+                $checkStmt->execute();
+                $checkStmt->bind_result($count);
+                $checkStmt->fetch();
+                $checkStmt->close();
 
-                // Prepare SQL statement with ON DUPLICATE KEY UPDATE
-                $stmt = $conn->prepare("
-                    INSERT INTO student 
-                    (reg_no, stud_name, sex, father_name, year, degree_branch, rec_no1, quota, mode, tuti, dev, trai_pl, cau_dep, rec_no2, hostel, online, bus, mess) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
-                    ON DUPLICATE KEY UPDATE 
-                    stud_name = VALUES(stud_name), 
-                    sex = VALUES(sex), 
-                    father_name = VALUES(father_name), 
-                    year = VALUES(year), 
-                    degree_branch = VALUES(degree_branch),
-                    rec_no1 = VALUES(rec_no1), 
-                    quota = VALUES(quota), 
-                    mode = VALUES(mode), 
-                    tuti = VALUES(tuti), 
-                    dev = VALUES(dev), 
-                    trai_pl = VALUES(trai_pl), 
-                    cau_dep = VALUES(cau_dep), 
-                    rec_no2 = VALUES(rec_no2), 
-                    hostel = VALUES(hostel), 
-                    online = VALUES(online), 
-                    bus = VALUES(bus), 
-                    mess = VALUES(mess)
-                ");
+                if ($count > 0) {
+                    // Update existing record
+                    $stmt = $conn->prepare("
+                        UPDATE student SET 
+                        stud_name = ?, sex = ?, father_name = ?, year = ?, degree_branch = ?, 
+                        rec_no1 = ?, quota = ?, mode = ?, tuti = ?, dev = ?, trai_pl = ?, 
+                        cau_dep = ?, rec_no2 = ?, hostel = ?, online = ?, bus = ?, mess = ?
+                        WHERE reg_no = ?
+                    ");
+                    $stmt->bind_param("ssssssssssssssssss", $stud_name, $sex, $father_name, $year, 
+                                      $degree_branch, $rec_no1, $quota, $mode, $tuti, $dev, 
+                                      $trai_pl, $cau_dep, $rec_no2, $hostel, $online, $bus, 
+                                      $mess, $reg_no);
+                } else {
+                    // Insert new record
+                    $stmt = $conn->prepare("
+                        INSERT INTO student 
+                        (reg_no, stud_name, sex, father_name, year, degree_branch, rec_no1, quota, 
+                        mode, tuti, dev, trai_pl, cau_dep, rec_no2, hostel, online, bus, mess) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    $stmt->bind_param("ssssssssssssssssss", $reg_no, $stud_name, $sex, $father_name, 
+                                      $year, $degree_branch, $rec_no1, $quota, $mode, $tuti, 
+                                      $dev, $trai_pl, $cau_dep, $rec_no2, $hostel, $online, 
+                                      $bus, $mess);
+                }
 
-                // Bind parameters
-                $stmt->bind_param("ssssssssssssssssss", $reg_no, $stud_name, $sex, $father_name, $year, $degree_branch, $rec_no1, $quota, $mode, $tuti, $dev, $trai_pl, $cau_dep, $rec_no2, $hostel, $online, $bus, $mess);
-
-                // Execute the statement
+                // Execute query
                 if (!$stmt->execute()) {
-                    die("Error inserting/updating row $row: " . $stmt->error);
+                    echo "❌ Error in row $row: " . $stmt->error . "<br>";
+                } else {
+                    echo "✅ Row $row updated successfully!<br>";
                 }
 
-                // Close the statement
                 $stmt->close();
             }
 
-            echo "<script>alert('Student details added/updated successfully');window.location.replace('add_excel.php');</script>";
+            echo "<script>alert('Student details added/updated successfully!'); window.location.replace('add_excel.php');</script>";
+
         } catch (Exception $e) {
-            echo "<script>alert('Error processing file: " . $e->getMessage() . "');window.location.replace('add_excel.php');</script>";
+            echo "<script>alert('Error processing file: " . $e->getMessage() . "'); window.location.replace('add_excel.php');</script>";
         }
     } else {
-        echo "<script>alert('Please choose an Excel file (.xls or .xlsx) only');window.location.replace('add_excel.php');</script>";
+        echo "<script>alert('Please upload a valid Excel file (.xls or .xlsx)'); window.location.replace('add_excel.php');</script>";
     }
 }
+?>
